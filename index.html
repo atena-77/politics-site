@@ -119,5 +119,21 @@
 
   <footer class="wrap footer"><small>© 2025 3分でわかる税</small></footer>
   <script src="/script.js"></script>
+  <!-- Glossary Modal -->
+<div id="glossary-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="glossary-title" aria-modal="true">
+  <div class="modal__backdrop" data-close></div>
+  <div class="modal__dialog" role="document">
+    <header class="modal__head">
+      <h3 id="glossary-title">用語</h3>
+      <button class="modal__close" aria-label="閉じる" data-close>✕</button>
+    </header>
+    <div class="modal__body">
+      <p id="glossary-desc" class="muted"></p>
+      <ul id="glossary-points" class="mini"></ul>
+      <div id="glossary-links" class="mini links-inline"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
