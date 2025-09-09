@@ -49,3 +49,26 @@ a{color:var(--accent)}
 @media (max-width: 880px){
   .grid{grid-template-columns:1fr}
 }
+/* 用語ボタン */
+.term{
+  background:#141831; color:var(--text);
+  border:1px solid var(--border); border-radius:999px;
+  padding:6px 10px; cursor:pointer; font-weight:700;
+}
+.term:hover{ background:#1a1f38 }
+
+/* モーダル */
+.modal{ position:fixed; inset:0; display:none; z-index:100; }
+.modal.is-open{ display:block; }
+.modal__backdrop{ position:absolute; inset:0; background:#0008; backdrop-filter: blur(2px); }
+.modal__dialog{
+  position:relative; margin:6vh auto; width:min(720px, 92vw);
+  background:#171a2b; border:1px solid var(--border); border-radius:14px; padding:0 0 12px;
+}
+.modal__head{ display:flex; justify-content:space-between; align-items:center;
+  padding:12px 14px; border-bottom:1px solid var(--border); }
+.modal__head h3{ margin:0; font-size:20px; }
+.modal__close{ border:1px solid var(--border); background:#12162a; color:var(--text);
+  border-radius:10px; padding:6px 10px; cursor:pointer; }
+.modal__body{ padding:14px; }
+.modal__body .mini li{ margin:6px 0; }
