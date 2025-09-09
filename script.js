@@ -80,6 +80,7 @@ function toJST(yyyymmddhhmmss){
 loadNews();
 
 /* -----------------------------
+  /* -----------------------------
    e-Stat（/api/estat → 最新値＋簡易グラフ）
 ----------------------------- */
 const estatBtn = document.getElementById("estat-btn");
@@ -102,61 +103,87 @@ async function fetchEstat(statsDataId){
   setStatLoading(true);
   currentTableEl.textContent = statsDataId;
   try {
-    const r = await fetch(`/api/estat?statsDataId=${encodeURIComponent(statsDataId)}&limit=5000`);
+    // 件数が多い表に備えて limit を多めに
+    const r = await fetch(`/api/estat?statsDataId=${encodeURIComponent(statsDataId)}&limit=50000`);
     const j = await r.json();
     if (j.error) throw new Error(j.error);
 
-    // タイトル表示など（任意）
-    const title = j?.GET_STATS_DATA?.STATISTICAL_DATA?.TABLE_INF?.TITLE || "—";
-
-    // 数値を抽出（VALUE の $ が数値、@time に時間キーが入る想定）
-    const values = j?.GET_STATS_DATA?.STATISTICAL_DATA?.DATA_INF?.VALUE || [];
+    const sd = j?.GET_STATS_DATA?.STATISTICAL_DATA;
+    const title = sd?.TABLE_INF?.TITLE || "—";
+    const values = sd?.DATA_INF?.VALUE;
     if (!Array.isArray(values) || !values.length) {
-      estatLatest.textContent = "—";
-      estatMeta.textContent = "データが見つかりません";
-      drawLine(estatChartEl, []); // 空で初期化
-      setStatLoading(false);
+      fail(`データが見つかりません（${title}）`);
       return;
     }
 
-    // 文字列の配列に整形： [{t:"YYYY", v:Number}, ...]
-    // time が無い場合は @tab や @cat などを見て適宜変更してください。
-    const series = values
-      .map(v => ({
-        t: v["@time"] || v["@timeCode"] || v["@tab"] || "",
-        v: Number(v["$"])
-      }))
-      .filter(x => !Number.isNaN(x.v) && x.t !== "")
-      .sort((a,b) => String(a.t).localeCompare(String(b.t)));
+    // 1) 時間キーを自動推定（@time, @timeCode, @time, @time_code などを探索）
+    const sample = values[0];
+    const timeKey = Object.keys(sample).find(k => /^@?time/i.test(k)) 
+                 || Object.keys(sample).find(k => /time/i.test(k))
+                 || null;
+
+    // 2) 単位を取得（TABLE_INF や CLASS_INF にあることが多い）
+    const unit =
+      sd?.TABLE_INF?.NOTE?.[0]?.char ||                 // 備考に入る場合
+      (sd?.CLASS_INF?.CLASS_OBJ || [])
+        .find(c => (c?.["@id"] || "").toLowerCase() === "unit")
+        ?.CLASS?.[0]?.["@name"] ||
+      "";
+
+    // 3) シリーズ成形（time が無い場合は連番）
+    let series = values.map((v, i) => ({
+      t: (timeKey && (v[timeKey] || v[String(timeKey)])) ?? i, // ラベル
+      v: toNum(v["$"])
+    }))
+    .filter(x => Number.isFinite(x.v))
+    .sort((a,b) => String(a.t).localeCompare(String(b.t)));
+
+    if (!series.length) {
+      // 値が文字列（"-" 等）だけで弾かれた場合はエラー表示
+      fail(`数値の抽出に失敗しました（${title}）。別の表IDで試すか、抽出ロジック調整が必要です。`);
+      console.debug("e-Stat raw sample:", sample);
+      return;
+    }
 
     // 最新値
     const latest = series[series.length - 1];
-    estatLatest.textContent = isFinite(latest?.v) ? latest.v.toLocaleString("ja-JP") : "—";
-    estatMeta.textContent = latest?.t ? `${latest.t} 時点（${title}）` : title;
+    estatLatest.textContent = latest.v.toLocaleString("ja-JP");
+    estatMeta.textContent = `${latest.t} 時点（${title}${unit ? " / 単位: " + unit : ""}）`;
 
-    // 簡易ラインチャート描画
+    // グラフ描画
     drawLine(estatChartEl, series);
   } catch (e) {
-    estatLatest.textContent = "—";
-    estatMeta.textContent = "取得に失敗しました。表ID・環境変数・ネットワークを確認してください。";
-    drawLine(estatChartEl, []);
+    fail("取得に失敗しました。表ID・環境変数・ネットワークを確認してください。");
+    console.error(e);
   } finally {
     setStatLoading(false);
   }
+}
+
+function toNum(x){
+  if (x == null) return NaN;
+  // 1,234 や 1,234.5、"-" などに対応
+  const s = String(x).replace(/,/g, "");
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
 }
 
 function setStatLoading(isLoading){
   estatBtn.disabled = isLoading;
   estatBtn.textContent = isLoading ? "取得中…" : "取得";
 }
+function fail(msg){
+  estatLatest.textContent = "—";
+  estatMeta.textContent = msg;
+  drawLine(estatChartEl, []);
+}
 
-/* 依存ライブラリ無しの超軽量ライン描画 */
+/* 依存なしの簡易ライン描画（そのまま） */
 function drawLine(canvas, series){
   const ctx = canvas.getContext("2d");
   const W = canvas.width, H = canvas.height;
   ctx.clearRect(0, 0, W, H);
 
-  // フレーム
   ctx.strokeStyle = "#2a2f47";
   ctx.lineWidth = 1;
   ctx.strokeRect(0.5, 0.5, W-1, H-1);
@@ -173,45 +200,33 @@ function drawLine(canvas, series){
   const maxY = Math.max(...ys);
   const spanY = (maxY - minY) || 1;
 
-  // 目盛り（Y軸 4本）
   ctx.strokeStyle = "#2a2f47";
   ctx.fillStyle = "#a8b0d6";
   ctx.font = "12px system-ui, -apple-system, 'Noto Sans JP', sans-serif";
   for (let i=0;i<=4;i++){
     const y = padding.t + (innerH * i / 4);
-    ctx.beginPath();
-    ctx.moveTo(padding.l, y);
-    ctx.lineTo(W - padding.r, y);
-    ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(padding.l, y); ctx.lineTo(W - padding.r, y); ctx.stroke();
     const val = maxY - (spanY * i / 4);
     ctx.fillText(formatNum(val), 6, y + 4);
   }
-
-  // Xラベル（端と中点）
   const xIdx = [0, Math.floor(xs.length/2), xs.length - 1].filter((v, i, a) => a.indexOf(v) === i);
   xIdx.forEach(idx => {
     const x = padding.l + innerW * (idx / (xs.length - 1 || 1));
     ctx.fillText(String(xs[idx]), x - 12, H - 8);
   });
 
-  // 線
   ctx.beginPath();
   for (let i=0;i<series.length;i++){
     const px = padding.l + innerW * (i / (series.length - 1 || 1));
     const py = padding.t + innerH * (1 - (series[i].v - minY) / spanY);
     if (i===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
   }
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "#9cffd0";
-  ctx.stroke();
+  ctx.lineWidth = 2; ctx.strokeStyle = "#9cffd0"; ctx.stroke();
 
-  // 最新点
   const lastX = padding.l + innerW;
   const lastY = padding.t + innerH * (1 - (ys[ys.length-1] - minY) / spanY);
-  ctx.fillStyle = "#9cffd0";
-  ctx.beginPath(); ctx.arc(lastX, lastY, 3, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = "#9cffd0"; ctx.beginPath(); ctx.arc(lastX, lastY, 3, 0, Math.PI*2); ctx.fill();
 }
-
 function formatNum(n){
   if (!isFinite(n)) return "—";
   if (Math.abs(n) >= 1e9) return (n/1e9).toFixed(1) + "B";
