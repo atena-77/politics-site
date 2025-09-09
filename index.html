@@ -4,76 +4,123 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>3分でわかる税（消費税）</title>
-  <meta name="description" content="消費税の要点＋一次情報リンク＋最新の発言とニュースを3分で。">
+  <meta name="description" content="消費税の要点・一次情報・最新発言とニュースをワンページで。e-Statの最新値と簡易グラフも表示。">
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <header class="wrap">
-    <h1>3分でわかる税：消費税</h1>
-    <p class="muted">要点 → 数字 → 一次情報。短時間でキャッチアップ。</p>
+  <header class="site-head">
+    <div class="wrap head-inner">
+      <div class="brand">
+        <h1>3分でわかる税</h1>
+        <p class="muted">要点 → 数字 → 一次情報。短時間でキャッチアップ。</p>
+      </div>
+      <nav class="nav">
+        <a href="#tldr">TL;DR</a>
+        <a href="#speeches-sec">国会</a>
+        <a href="#news-sec">ニュース</a>
+        <a href="#estat-sec">数字</a>
+      </nav>
+    </div>
   </header>
 
-  <main class="wrap">
+  <main class="wrap grid">
+    <!-- Left column -->
+    <section class="col">
+      <!-- TL;DR -->
+      <section class="card" id="tldr">
+        <h2>今日の1分解説（TL;DR）</h2>
+        <ul class="tldr">
+          <li>標準税率は<strong>10%</strong>、一部に<strong>軽減税率8%</strong>（食品・定期購読新聞等）。2019年10月〜。</li>
+          <li><strong>インボイス制度</strong>は<strong>2023年10月1日開始</strong>。仕入税額控除の要件に関係。</li>
+          <li>事実は一次情報で確認：財務省・国税庁・国会会議録・統計（e-Stat）。</li>
+        </ul>
+        <div class="mini muted links-inline">
+          出典：<a href="https://www.mof.go.jp/english/policy/tax_policy/consumption_tax/index.html" target="_blank" rel="noopener">財務省（英語）</a> /
+          <a href="https://www.nta.go.jp/english/taxes/consumption_tax/01.htm" target="_blank" rel="noopener">国税庁：基礎</a> /
+          <a href="https://www.nta.go.jp/english/taxes/consumption_tax/pdf/2023/simplified_04.pdf" target="_blank" rel="noopener">国税庁：インボイスPDF</a> /
+          <a href="https://dashboard.e-stat.go.jp/graph?screenCode=00730" target="_blank" rel="noopener">e-Statダッシュボード</a>
+        </div>
+      </section>
 
-    <!-- TL;DR -->
-    <section class="card">
-      <h2>今日の1分解説（TL;DR）</h2>
-      <ul class="tldr">
-        <li>標準税率は<strong>10%</strong>、一部に<strong>軽減税率8%</strong>（食品・定期購読新聞等）。2019年10月〜。</li>
-        <li><strong>インボイス制度</strong>は<strong>2023年10月1日開始</strong>。仕入税額控除の要件に関係。</li>
-        <li>事実は一次情報で確認：財務省・国税庁・国会会議録・統計（e-Stat）。</li>
-      </ul>
-      <div class="mini muted">
-        出典：<a href="https://www.mof.go.jp/english/policy/tax_policy/consumption_tax/index.html" target="_blank" rel="noopener">財務省（英語）</a> /
-        <a href="https://www.nta.go.jp/english/taxes/consumption_tax/01.htm" target="_blank" rel="noopener">国税庁：基礎</a> /
-        <a href="https://www.nta.go.jp/english/taxes/consumption_tax/pdf/2023/simplified_04.pdf" target="_blank" rel="noopener">国税庁：インボイスPDF</a> /
-        <a href="https://dashboard.e-stat.go.jp/graph?screenCode=00730" target="_blank" rel="noopener">e-Statダッシュボード</a>
-      </div>
+      <!-- 国会会議録 -->
+      <section class="card" id="speeches-sec">
+        <div class="section-head">
+          <h2>国会で今なにが語られてる？</h2>
+          <span class="badge">会議録API</span>
+        </div>
+        <div class="row">
+          <input id="kw" placeholder="例：消費税, 軽減税率, インボイス" value="消費税" />
+          <button id="search">検索</button>
+        </div>
+        <div id="speeches" class="list muted">キーワードで最新の発言を3件表示します。</div>
+        <p class="mini muted">出典：<a href="https://kokkai.ndl.go.jp/" target="_blank" rel="noopener">国会会議録検索システム（NDL）</a></p>
+      </section>
+
+      <!-- ニュース -->
+      <section class="card" id="news-sec">
+        <div class="section-head">
+          <h2>最新ニュース（日本・税関連）</h2>
+          <div id="news-updated" class="muted mini">更新中…</div>
+        </div>
+        <div id="news" class="cards-grid"></div>
+        <p class="mini muted">出典：GDELT 2.0 DOC API（ヘッドラインとリンク）。</p>
+      </section>
     </section>
 
-    <!-- 会議録ミニ検索 -->
-    <section class="card">
-      <h2>国会で今なにが語られてる？（会議録API検索）</h2>
-      <div class="row">
-        <input id="kw" placeholder="例：消費税, 軽減税率, インボイス" value="消費税" />
-        <button id="search">検索</button>
-      </div>
-      <div id="speeches" class="list muted">キーワードで最新の発言を3件表示します。</div>
-      <p class="mini muted">データ出典：<a href="https://kokkai.ndl.go.jp/" target="_blank" rel="noopener">国会会議録検索システム（NDL）</a></p>
-    </section>
+    <!-- Right column -->
+    <aside class="col">
+      <!-- e-Stat -->
+      <section class="card" id="estat-sec">
+        <div class="section-head">
+          <h2>数字で見る（e-Stat API）</h2>
+          <span class="badge">要AppID</span>
+        </div>
 
-    <!-- ニュース（GDELT経由） -->
-    <section class="card">
-      <div class="flex-head">
-        <h2>最新ニュース（日本・税関連）</h2>
-        <div id="news-updated" class="muted mini">更新中…</div>
-      </div>
-      <div id="news" class="cards-grid"></div>
-      <p class="mini muted">出典：GDELT 2.0 DOC API（ヘッドラインとリンク）。</p>
-    </section>
+        <div class="chip-stack">
+          <div class="chip">最終更新：<span id="page-updated">—</span></div>
+          <div class="chip">現在の表ID：<span id="current-table">未設定</span></div>
+        </div>
 
-    <!-- e-Stat（任意：鍵設定後に表示） -->
-    <section class="card">
-      <h2>数字で見る（e-Stat API *任意*）</h2>
-      <p class="muted mini">※Vercelの環境変数 <code>ESTAT_APP_ID</code> を設定すると、ここに統計の最新値を表示します。</p>
-      <div class="row">
-        <input id="estat-id" placeholder="statsDataId（表ID）を入力" />
-        <button id="estat-btn">取得</button>
-      </div>
-      <pre id="estat-out" class="codebox muted">未取得</pre>
-      <p class="mini muted">e-Stat APIの表IDは公式サイトの検索→詳細から確認してください。</p>
-    </section>
+        <div class="row">
+          <input id="estat-id" placeholder="statsDataId（表ID）を入力" />
+          <button id="estat-btn">取得</button>
+        </div>
 
-    <!-- 免責 -->
-    <section class="card small">
-      <h2>注意・免責</h2>
-      <ul class="mini">
-        <li>当サイトは学習目的の要約です。重要判断は必ず一次情報で確認してください。</li>
-        <li>個人情報は収集しません（ブラウザ内のみ）。</li>
-        <li>最終更新：<span id="page-updated"></span></li>
-      </ul>
-    </section>
+        <div class="stat-block">
+          <div class="stat">
+            <div class="stat-label">最新の値</div>
+            <div class="stat-value" id="estat-latest">—</div>
+            <div class="stat-note muted" id="estat-latest-meta">—</div>
+          </div>
+          <canvas id="estat-chart" width="640" height="320" aria-label="統計の推移グラフ"></canvas>
+        </div>
 
+        <details class="mini">
+          <summary>使い方のヒント</summary>
+          <ul class="mini">
+            <li>まずはテスト用：<code>C0020050213000</code>（e-Stat公式サンプル）</li>
+            <li>税収や家計支出など、目的の表IDを入れて「取得」。</li>
+          </ul>
+        </details>
+      </section>
+
+      <!-- 用語ミニ辞書 -->
+      <section class="card">
+        <h2>用語ミニ辞書</h2>
+        <p><strong>軽減税率：</strong>生活必需品など一部に適用される8%。主に食品（酒・外食を除く）と定期購読新聞。</p>
+        <p><strong>インボイス：</strong>仕入税額控除に必要な記載要件を満たす「適格請求書」。2023/10/1開始。</p>
+        <p><strong>仕入税額控除：</strong>仕入で支払った消費税分を売上の消費税から差し引ける仕組み。</p>
+      </section>
+
+      <!-- 免責 -->
+      <section class="card small">
+        <h2>注意・免責</h2>
+        <ul class="mini">
+          <li>学習目的の要約です。重要判断は必ず一次情報で確認してください。</li>
+          <li>個人情報は収集しません（ブラウザ内処理）。</li>
+        </ul>
+      </section>
+    </aside>
   </main>
 
   <footer class="wrap footer"><small>© 2025 3分でわかる税</small></footer>
