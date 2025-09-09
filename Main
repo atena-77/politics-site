@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3分でわかる政治</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;margin:0;background:#0f1220;color:#eef0ff}
+  .wrap{width:min(920px,92vw);margin:24px auto}
+  .card{background:#171a2b;border:1px solid #2a2f47;border-radius:12px;padding:16px;margin:12px 0}
+  a{color:#9cffd0} .muted{color:#a8b0d6}
+  .row{display:grid;gap:8px}
+  input,button{padding:10px;border-radius:10px;border:1px solid #2a2f47;background:#12162a;color:#eef0ff}
+  button{cursor:pointer;font-weight:700}
+  .tldr li{margin:6px 0}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>3分でわかる政治</h1>
+    <p class="muted">要点→数字→一次情報。短時間でキャッチアップ。</p>
+
+    <section class="card">
+      <h2>今日の1分解説（TL;DR）</h2>
+      <p><strong>テーマ：</strong>「なぜ若者の投票が重要？」</p>
+      <ul class="tldr">
+        <li>投票年齢は<strong>18歳</strong>。2015年の法改正で実現（→出典）。</li>
+        <li>直近の衆院選の投票率は約<strong>53.85%</strong>。若年層は低めの傾向（→出典）。</li>
+        <li>「一次情報」に触れるのが近道。国会会議録で発言を確認しよう。</li>
+      </ul>
+      <p class="muted">出典：<a href="https://www.loc.gov/item/global-legal-monitor/2015-06-24/japan-voting-age-lowered-from-20-to-18/" target="_blank" rel="noopener">投票年齢18歳（米議会図書館まとめ）</a> /
+        <a href="https://www.electionguide.org/countries/id/109/" target="_blank" rel="noopener">投票率データ（IFES）</a></p>
+    </section>
+
+    <section class="card">
+      <h2>国会で今なにが語られてる？（会議録APIミニ検索）</h2>
+      <div class="row" style="grid-template-columns:1fr auto">
+        <input id="kw" placeholder="例：教育費、税、環境、賃上げ…">
+        <button id="search">検索</button>
+      </div>
+      <div id="results" class="muted" style="margin-top:10px">キーワードで最新発言を3件まで表示します。</div>
+      <p class="muted" style="margin-top:8px">データ出典：<a href="https://kokkai.ndl.go.jp/" target="_blank" rel="noopener">国会会議録検索システム</a></p>
+    </section>
+
+    <section class="card">
+      <h2>用語ミニ辞書</h2>
+      <p><strong>比例代表：</strong>政党の得票数に応じて議席を配分する仕組み。個人名ではなく政党名に投票します。</p>
+      <p><strong>会期：</strong>国会が開かれている期間。通常国会・臨時国会などの種類があります。</p>
+      <p class="muted">書き方は<a href="https://design.digital.go.jp/" target="_blank" rel="noopener">デジタル庁デザインシステム</a>の考え方に沿って、やさしく・読みやすく。 </p>
+    </section>
+
+    <section class="card">
+      <h2>もっと知る（公的リンク）</h2>
+      <ul>
+        <li><a href="https://dashboard.e-stat.go.jp/graph?screenCode=00730" target="_blank" rel="noopener">投票率の可視化（e-Statダッシュボード）</a></li>
+        <li><a href="https://www.gov-online.go.jp/article/201602/entry-7825.html" target="_blank" rel="noopener">政府広報：18・19歳の投票について</a></li>
+        <li><a href="https://www.mofa.go.jp/mofaj/toko/senkyo/abroad.html" target="_blank" rel="noopener">海外在住者の投票（外務省 在外選挙）</a></li>
+      </ul>
+    </section>
+  </div>
+
+<script>
+const btn = document.getElementById('search');
+btn?.addEventListener('click', async () => {
+  const kw = document.getElementById('kw').value.trim();
+  const out = document.getElementById('results');
+  if(!kw){ out.textContent = 'キーワードを入力してください。'; return; }
+  out.textContent = '検索中…';
+  try {
+    // 国会会議録API（JSON）
+    const url = `https://kokkai.ndl.go.jp/api/speech?recordPacking=json&maximumRecords=3&any=${encodeURIComponent(kw)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const list = (data?.{"@graph"}?.[0]?.speechRecord || []);
+    if(list.length === 0){ out.textContent = '該当する最新の発言が見つかりませんでした。キーワードを変えて試してください。'; return; }
+    out.innerHTML = list.map(s => {
+      const who = s.speech?.speaker || s.speech?.speakerRole || '発言';
+      const text = (s.speech?.speech || '').slice(0,160).replace(/\s+/g,' ') + '…';
+      const link = s.speechURL || s.imageKind || '#';
+      return `<div style="margin:10px 0;padding:10px;border:1px dashed #2a2f47;border-radius:10px">
+        <div><strong>${who}</strong>｜${s.meeting?.name || ''}（${s.meeting?.date || ''}）</div>
+        <div style="margin-top:6px">${text}</div>
+        <a href="${s.speechURL}" target="_blank" rel="noopener">全文を読む</a>
+      </div>`;
+    }).join('');
+  } catch(e){
+    out.textContent = '取得に失敗しました。時間をおいて再度お試しください。';
+  }
+});
+</script>
+</body>
+</html>
