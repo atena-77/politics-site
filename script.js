@@ -234,3 +234,111 @@ function formatNum(n){
   if (Math.abs(n) >= 1e3) return (n/1e3).toFixed(1) + "K";
   return Math.round(n).toLocaleString("ja-JP");
 }
+/* -----------------------------
+   用語モーダル：辞書＆イベント
+----------------------------- */
+const GLOSSARY = {
+  "軽減税率": {
+    title: "軽減税率（8%）",
+    desc: "生活必需品等の負担を和らげる目的で、標準10%ではなく8%を適用する制度（2019年10月導入）。",
+    points: [
+      "対象：飲食料品（酒類を除く）・定期購読の新聞（週2回以上発行）",
+      "外食・酒類は対象外（テイクアウトは対象）",
+      "適用判定は品目・提供形態で変わる（例：コンビニのイートインは10%）"
+    ],
+    links: [
+      { label: "国税庁：軽減税率の制度概要（英語）", url: "https://www.nta.go.jp/english/taxes/consumption_tax/01.htm" }
+    ]
+  },
+  "インボイス": {
+    title: "インボイス（適格請求書等保存方式）",
+    desc: "仕入税額控除の適用要件として、一定の記載事項を満たす請求書（適格請求書）が必要になる制度。2023年10月1日開始。",
+    points: [
+      "記載要件：登録番号、適用税率ごとの対価、消費税額等",
+      "発行できるのは「適格請求書発行事業者」（登録制）",
+      "受け取る側はインボイス保存で仕入税額控除が可能"
+    ],
+    links: [
+      { label: "国税庁：インボイス制度（英語PDF）", url: "https://www.nta.go.jp/english/taxes/consumption_tax/pdf/2023/simplified_04.pdf" }
+    ]
+  },
+  "仕入税額控除": {
+    title: "仕入税額控除",
+    desc: "事業者が仕入で支払った消費税を、売上にかかる消費税から差し引ける仕組み。二重課税の回避が目的。",
+    points: [
+      "帳簿及びインボイス（適格請求書）の保存が要件",
+      "免税事業者からの仕入は原則控除不可（経過措置あり）",
+      "課税売上割合が95%未満だと按分計算が必要になる場合あり"
+    ],
+    links: [
+      { label: "国税庁：消費税の基礎（英語）", url: "https://www.nta.go.jp/english/taxes/consumption_tax/01.htm" }
+    ]
+  },
+  "免税事業者": {
+    title: "免税事業者",
+    desc: "基準期間の課税売上高が1,000万円以下等の要件を満たし、消費税の納税義務が免除される事業者。",
+    points: [
+      "インボイス発行を希望するなら登録して課税事業者になる必要",
+      "免税のままだと仕入税額控除の対象外となる取引先がある",
+      "課税事業者選択届出で任意に課税事業者になることも可能"
+    ],
+    links: [
+      { label: "財務省：消費税の仕組み（英語）", url: "https://www.mof.go.jp/english/policy/tax_policy/consumption_tax/index.html" }
+    ]
+  },
+  "適格請求書発行事業者": {
+    title: "適格請求書発行事業者",
+    desc: "インボイス（適格請求書）を発行できる登録事業者。登録番号が付与され、国税庁の公表サイトで確認できる。",
+    points: [
+      "登録は税務署への申請が必要（原則、課税事業者）",
+      "取引先が仕入税額控除を行うためにインボイスが必要",
+      "登録番号は請求書等に記載する義務あり"
+    ],
+    links: [
+      { label: "国税庁：インボイス制度（英語PDF）", url: "https://www.nta.go.jp/english/taxes/consumption_tax/pdf/2023/simplified_04.pdf" }
+    ]
+  }
+};
+
+// 開閉制御
+const modal = document.getElementById("glossary-modal");
+const titleEl = document.getElementById("glossary-title");
+const descEl = document.getElementById("glossary-desc");
+const pointsEl = document.getElementById("glossary-points");
+const linksEl = document.getElementById("glossary-links");
+let lastFocused = null;
+
+function openModal(payload){
+  if (!modal) return;
+  titleEl.textContent = payload.title || "用語";
+  descEl.textContent = payload.desc || "";
+  pointsEl.innerHTML = (payload.points || []).map(x => `<li>${escapeHtml(x)}</li>`).join("");
+  linksEl.innerHTML = (payload.links || []).map(x => `<a href="${x.url}" target="_blank" rel="noopener">${escapeHtml(x.label)}</a>`).join(" / ");
+  modal.classList.add("is-open");
+  modal.setAttribute("aria-hidden", "false");
+  // フォーカス管理
+  lastFocused = document.activeElement;
+  modal.querySelector(".modal__close")?.focus();
+}
+function closeModal(){
+  if (!modal) return;
+  modal.classList.remove("is-open");
+  modal.setAttribute("aria-hidden", "true");
+  if (lastFocused) lastFocused.focus();
+}
+document.addEventListener("click", (e) => {
+  const t = e.target;
+  if (t.matches(".term")){
+    const key = t.getAttribute("data-term");
+    const payload = GLOSSARY[key];
+    if (payload) openModal(payload);
+  }
+  if (t.matches("[data-close]")) closeModal();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") closeModal();
+});
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
