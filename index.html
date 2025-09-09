@@ -4,8 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>3分でわかる税（消費税）</title>
-  <meta name="description" content="消費税の超要点を3分で。基本・軽減税率・インボイス、一次情報へのリンク付き。">
-  <link rel="stylesheet" href="style.css" />
+  <meta name="description" content="消費税の要点＋一次情報リンク＋最新の発言とニュースを3分で。">
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="wrap">
@@ -14,65 +14,69 @@
   </header>
 
   <main class="wrap">
+
     <!-- TL;DR -->
     <section class="card">
       <h2>今日の1分解説（TL;DR）</h2>
       <ul class="tldr">
-        <li>標準税率は<strong>10%</strong>、一部に<strong>軽減税率8%</strong>（食品・定期購読新聞等）。2019年10月から。→ 出典リンク参照</li>
-        <li><strong>インボイス制度</strong>（適格請求書等保存方式）は<strong>2023年10月1日開始</strong>。仕入税額控除の要件に関連。→ 出典リンク参照</li>
-        <li>消費税は間接税で、最終消費に広く薄く課税。制度詳細は財務省・国税庁の一次情報へ。</li>
+        <li>標準税率は<strong>10%</strong>、一部に<strong>軽減税率8%</strong>（食品・定期購読新聞等）。2019年10月〜。</li>
+        <li><strong>インボイス制度</strong>は<strong>2023年10月1日開始</strong>。仕入税額控除の要件に関係。</li>
+        <li>事実は一次情報で確認：財務省・国税庁・国会会議録・統計（e-Stat）。</li>
       </ul>
-      <p class="muted">※ここは固定文。日替わりでテーマを差し替えてもOK。</p>
+      <div class="mini muted">
+        出典：<a href="https://www.mof.go.jp/english/policy/tax_policy/consumption_tax/index.html" target="_blank" rel="noopener">財務省（英語）</a> /
+        <a href="https://www.nta.go.jp/english/taxes/consumption_tax/01.htm" target="_blank" rel="noopener">国税庁：基礎</a> /
+        <a href="https://www.nta.go.jp/english/taxes/consumption_tax/pdf/2023/simplified_04.pdf" target="_blank" rel="noopener">国税庁：インボイスPDF</a> /
+        <a href="https://dashboard.e-stat.go.jp/graph?screenCode=00730" target="_blank" rel="noopener">e-Statダッシュボード</a>
+      </div>
     </section>
 
-    <!-- 基本＆リンク集 -->
+    <!-- 会議録ミニ検索 -->
     <section class="card">
-      <h2>基本と出典（一次情報）</h2>
-      <ul class="links">
-        <li>財務省：消費税の仕組み（英語資料 Chapter「Consumption Tax」）</li>
-        <li><a href="https://www.mof.go.jp/english/policy/tax_policy/consumption_tax/index.html" target="_blank" rel="noopener">消費税10%・軽減税率8%（2019/10〜）</a></li>
-        <li><a href="https://www.nta.go.jp/english/taxes/consumption_tax/01.htm" target="_blank" rel="noopener">国税庁：消費税の基礎（軽減税率の対象など）</a></li>
-        <li><a href="https://www.nta.go.jp/english/taxes/consumption_tax/pdf/2023/simplified_04.pdf" target="_blank" rel="noopener">国税庁：インボイス制度の概要（英語PDF）</a></li>
-        <li><a href="https://dashboard.e-stat.go.jp/en/" target="_blank" rel="noopener">e-Stat ダッシュボード（統計可視化）</a></li>
-      </ul>
-      <details class="mini">
-        <summary>歴史のメモ（概略）</summary>
-        <p>導入は1989年（3%）→ 1997年（5%）→ 2014年（8%）→ 2019年（10%）。</p>
-      </details>
-    </section>
-
-    <!-- 用語ミニ辞書 -->
-    <section class="card">
-      <h2>用語ミニ辞書</h2>
-      <p><strong>軽減税率：</strong>生活必需品など一部の品目に適用される8%の税率。主に食品（酒・外食を除く）と週2回以上の定期購読新聞。</p>
-      <p><strong>インボイス（適格請求書）：</strong>仕入税額控除の適用に必要な記載要件を満たす請求書。2023年10月1日開始。</p>
-      <p><strong>仕入税額控除：</strong>事業者が仕入で支払った消費税分を、売上にかかる消費税から差し引ける仕組み。</p>
-    </section>
-
-    <!-- 国会会議録ミニ検索 -->
-    <section class="card">
-      <h2>国会で今なにが語られてる？（会議録APIミニ検索）</h2>
+      <h2>国会で今なにが語られてる？（会議録API検索）</h2>
       <div class="row">
-        <input id="kw" placeholder="例：消費税, 軽減税率, インボイス" value="消費税">
+        <input id="kw" placeholder="例：消費税, 軽減税率, インボイス" value="消費税" />
         <button id="search">検索</button>
       </div>
-      <div id="results" class="muted">最新の発言を最大3件表示します。</div>
-      <p class="muted">データ出典：<a href="https://kokkai.ndl.go.jp/" target="_blank" rel="noopener">国会会議録検索システム</a></p>
+      <div id="speeches" class="list muted">キーワードで最新の発言を3件表示します。</div>
+      <p class="mini muted">データ出典：<a href="https://kokkai.ndl.go.jp/" target="_blank" rel="noopener">国会会議録検索システム（NDL）</a></p>
+    </section>
+
+    <!-- ニュース（GDELT経由） -->
+    <section class="card">
+      <div class="flex-head">
+        <h2>最新ニュース（日本・税関連）</h2>
+        <div id="news-updated" class="muted mini">更新中…</div>
+      </div>
+      <div id="news" class="cards-grid"></div>
+      <p class="mini muted">出典：GDELT 2.0 DOC API（ヘッドラインとリンク）。</p>
+    </section>
+
+    <!-- e-Stat（任意：鍵設定後に表示） -->
+    <section class="card">
+      <h2>数字で見る（e-Stat API *任意*）</h2>
+      <p class="muted mini">※Vercelの環境変数 <code>ESTAT_APP_ID</code> を設定すると、ここに統計の最新値を表示します。</p>
+      <div class="row">
+        <input id="estat-id" placeholder="statsDataId（表ID）を入力" />
+        <button id="estat-btn">取得</button>
+      </div>
+      <pre id="estat-out" class="codebox muted">未取得</pre>
+      <p class="mini muted">e-Stat APIの表IDは公式サイトの検索→詳細から確認してください。</p>
     </section>
 
     <!-- 免責 -->
     <section class="card small">
       <h2>注意・免責</h2>
       <ul class="mini">
-        <li>当サイトは学習目的の要約です。必ず一次情報で確認してください。</li>
-        <li>個人情報は収集しません（ブラウザ内でのみ処理）。</li>
+        <li>当サイトは学習目的の要約です。重要判断は必ず一次情報で確認してください。</li>
+        <li>個人情報は収集しません（ブラウザ内のみ）。</li>
+        <li>最終更新：<span id="page-updated"></span></li>
       </ul>
     </section>
+
   </main>
 
   <footer class="wrap footer"><small>© 2025 3分でわかる税</small></footer>
-  <script src="script.js"></script>
+  <script src="/script.js"></script>
 </body>
 </html>
-
-
